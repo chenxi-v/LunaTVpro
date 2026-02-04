@@ -2,7 +2,18 @@
 
 'use client';
 
-import { Box, Cat, Clover, Film, Globe, Home, PlaySquare, Radio, Star, Tv } from 'lucide-react';
+import {
+  Box,
+  Cat,
+  Clover,
+  Film,
+  Globe,
+  Home,
+  PlaySquare,
+  Radio,
+  Star,
+  Tv,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -62,44 +73,12 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       hoverBg: 'hover:bg-blue-500/20',
     },
     {
-      icon: Film,
-      label: '电影',
-      href: '/douban?type=movie',
-      activeGradient: 'bg-gradient-to-r from-pink-500 to-rose-500',
+      icon: Star,
+      label: '豆瓣',
+      href: '/douban',
+      activeGradient: 'bg-gradient-to-r from-red-500 to-pink-500',
       activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-pink-500/20',
-    },
-    {
-      icon: Tv,
-      label: '剧集',
-      href: '/douban?type=tv',
-      activeGradient: 'bg-gradient-to-r from-purple-500 to-indigo-500',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-purple-500/20',
-    },
-    {
-      icon: PlaySquare,
-      label: '短剧',
-      href: '/shortdrama',
-      activeGradient: 'bg-gradient-to-r from-orange-500 to-red-500',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-orange-500/20',
-    },
-    {
-      icon: Cat,
-      label: '动漫',
-      href: '/douban?type=anime',
-      activeGradient: 'bg-gradient-to-r from-emerald-400 to-teal-500',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-emerald-500/20',
-    },
-    {
-      icon: Clover,
-      label: '综艺',
-      href: '/douban?type=show',
-      activeGradient: 'bg-gradient-to-r from-amber-400 to-orange-500',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-amber-500/20',
+      hoverBg: 'hover:bg-red-500/20',
     },
     {
       icon: Radio,
@@ -147,7 +126,10 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       if (href === '/' && decodedActive === '/') return true;
 
       // 源浏览特殊处理
-      if (href === '/source-browser' && decodedActive.startsWith('/source-browser'))
+      if (
+        href === '/source-browser' &&
+        decodedActive.startsWith('/source-browser')
+      )
         return true;
 
       // 短剧特殊处理

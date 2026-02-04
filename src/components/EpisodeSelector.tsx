@@ -389,7 +389,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
       {activeTab === 'episodes' && (
         <>
           {/* 分类标签 */}
-          <div className='flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4 border-b border-gray-300 dark:border-gray-700 -mx-4 px-4 shrink-0'>
+          <div className='flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4 -mx-4 px-4 shrink-0'>
             <div
               className='flex-1 overflow-x-auto scrollbar-hide'
               ref={categoryContainerRef}
@@ -401,7 +401,15 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                 msOverflowStyle: 'none'
               }}
             >
-              <div className='flex gap-2 min-w-max pb-2'>
+              <div className='relative inline-flex bg-gray-200/60 rounded-full p-0.5 sm:p-1 dark:bg-gray-700/60 backdrop-blur-sm min-w-max pb-1'>
+                {/* 滑动的白色背景指示器 */}
+                {buttonRefs.current[displayPage] && (
+                  <div className='absolute top-0.5 bottom-0.5 sm:top-1 sm:bottom-1 bg-white dark:bg-gray-500 rounded-full shadow-sm transition-all duration-300 ease-out' style={{
+                    left: `${buttonRefs.current[displayPage]?.getBoundingClientRect().left - categoryContainerRef.current?.getBoundingClientRect().left || 0}px`,
+                    width: `${buttonRefs.current[displayPage]?.getBoundingClientRect().width || 0}px`,
+                  }} />
+                )}
+                
                 {categories.map((label, idx) => {
                   const isActive = idx === displayPage;
                   return (
@@ -411,17 +419,14 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                         buttonRefs.current[idx] = el;
                       }}
                       onClick={() => handleCategoryClick(idx)}
-                      className={`min-w-[64px] sm:min-w-[80px] relative py-2 sm:py-2.5 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 text-center rounded-t-lg active:scale-95
+                      className={`min-w-[64px] sm:min-w-[80px] relative z-10 py-2 sm:py-2.5 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 text-center rounded-full active:scale-95
                         ${isActive
-                          ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
-                          : 'text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                          ? 'text-gray-900 dark:text-gray-100'
+                          : 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100'
                         }
                       `.trim()}
                     >
                       {label}
-                      {isActive && (
-                        <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-green-500 dark:bg-green-400 rounded-full' />
-                      )}
                     </button>
                   );
                 })}
@@ -429,7 +434,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
             </div>
             {/* 向上/向下按钮 */}
             <button
-              className='shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-gray-700 hover:text-green-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-green-400 dark:hover:bg-white/20 transition-all duration-200 hover:scale-105 active:scale-95 transform translate-y-[-4px]'
+              className='shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95'
               onClick={() => {
                 // 切换集数排序（正序/倒序）
                 setDescending((prev) => !prev);

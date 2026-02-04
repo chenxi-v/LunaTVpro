@@ -523,10 +523,54 @@ const MultiLevelSelector: React.FC<MultiLevelSelectorProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 添加指示器状态
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    left: number;
+    width: number;
+  }>({ left: 0, width: 0 });
+
+  // 更新指示器位置
+  const updateIndicatorPosition = (categoryKey: string) => {
+    const element = categoryRefs.current[categoryKey];
+    if (element) {
+      const timeoutId = setTimeout(() => {
+        const rect = element.getBoundingClientRect();
+        const container = element.parentElement;
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          setIndicatorStyle({
+            left: rect.left - containerRect.left,
+            width: rect.width,
+          });
+        }
+      }, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  };
+
+  // 监听激活分类变化
+  useEffect(() => {
+    if (activeCategory) {
+      const cleanup = updateIndicatorPosition(activeCategory);
+      return cleanup;
+    }
+  }, [activeCategory]);
+
   return (
     <>
       {/* 胶囊样式筛选栏 */}
-      <div className='relative inline-flex rounded-full p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2'>
+      <div className='relative inline-flex bg-gray-200/60 rounded-full p-0.5 sm:p-1 dark:bg-gray-700/60 backdrop-blur-sm'>
+        {/* 滑动的白色背景指示器 */}
+        {indicatorStyle.width > 0 && (
+          <div
+            className='absolute top-0.5 bottom-0.5 sm:top-1 sm:bottom-1 bg-white dark:bg-gray-500 rounded-full shadow-sm transition-all duration-300 ease-out'
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+            }}
+          />
+        )}
+
         {categories.map((category) => (
           <div
             key={category.key}
@@ -537,13 +581,13 @@ const MultiLevelSelector: React.FC<MultiLevelSelectorProps> = ({
           >
             <button
               onClick={() => handleCategoryClick(category.key)}
-              className={`relative z-10 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${activeCategory === category.key
+              className={`relative z-10 px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${activeCategory === category.key
                   ? isDefaultValue(category.key)
                     ? 'text-gray-900 dark:text-gray-100 cursor-default'
-                    : 'text-green-600 dark:text-green-400 cursor-default'
+                    : 'text-gray-900 dark:text-gray-100 cursor-default'
                   : isDefaultValue(category.key)
                     ? 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 cursor-pointer'
-                    : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 cursor-pointer'
+                    : 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 cursor-pointer'
                 }`}
             >
               <span>{getDisplayText(category.key)}</span>

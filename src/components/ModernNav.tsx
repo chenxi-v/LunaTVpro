@@ -2,7 +2,21 @@
 
 'use client';
 
-import { Cat, Clover, Film, Globe, Home, MoreHorizontal, PlaySquare, Radio, Search, Sparkles, Star, Tv, X } from 'lucide-react';
+import {
+  Cat,
+  Clover,
+  Film,
+  Globe,
+  Home,
+  MoreHorizontal,
+  PlaySquare,
+  Radio,
+  Search,
+  Sparkles,
+  Star,
+  Tv,
+  X,
+} from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -24,7 +38,10 @@ interface ModernNavProps {
   onAIButtonClick?: () => void;
 }
 
-export default function ModernNav({ showAIButton = false, onAIButtonClick }: ModernNavProps = {}) {
+export default function ModernNav({
+  showAIButton = false,
+  onAIButtonClick,
+}: ModernNavProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -55,39 +72,11 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       gradient: 'from-emerald-500 to-green-500',
     },
     {
-      icon: Film,
-      label: '电影',
-      href: '/douban?type=movie',
+      icon: Star,
+      label: '豆瓣',
+      href: '/douban',
       color: 'text-red-500',
       gradient: 'from-red-500 to-pink-500',
-    },
-    {
-      icon: Tv,
-      label: '剧集',
-      href: '/douban?type=tv',
-      color: 'text-blue-600',
-      gradient: 'from-blue-600 to-indigo-600',
-    },
-    {
-      icon: PlaySquare,
-      label: '短剧',
-      href: '/shortdrama',
-      color: 'text-purple-500',
-      gradient: 'from-purple-500 to-violet-500',
-    },
-    {
-      icon: Cat,
-      label: '动漫',
-      href: '/douban?type=anime',
-      color: 'text-pink-500',
-      gradient: 'from-pink-500 to-rose-500',
-    },
-    {
-      icon: Clover,
-      label: '综艺',
-      href: '/douban?type=show',
-      color: 'text-orange-500',
-      gradient: 'from-orange-500 to-amber-500',
     },
     {
       icon: Radio,
@@ -149,55 +138,55 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
             {/* Navigation Items */}
             <div className='flex items-center justify-center gap-1 lg:gap-2 overflow-x-auto scrollbar-hide flex-1 px-4'>
               {menuItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
+                const Icon = item.icon;
+                const active = isActive(item.href);
 
-              return (
-                <FastLink
-                  key={item.label}
-                  href={item.href}
-                  useTransitionNav
-                  onClick={() => setActive(item.href)}
-                  className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 whitespace-nowrap shrink-0'
-                >
-                  {/* Active indicator */}
-                  {active && (
-                    <div
-                      className={`absolute inset-0 bg-linear-to-r ${item.gradient} opacity-10 rounded-full animate-pulse`}
-                    />
-                  )}
-
-                  {/* Icon */}
-                  <div className='relative'>
-                    <Icon
-                      className={`w-5 h-5 transition-all duration-300 ${
-                        active
-                          ? item.color
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'
-                      } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
-                    />
-                  </div>
-
-                  {/* Label */}
-                  <span
-                    className={`text-sm font-medium transition-all duration-300 ${
-                      active
-                        ? `${item.color} font-semibold`
-                        : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
-                    }`}
+                return (
+                  <FastLink
+                    key={item.label}
+                    href={item.href}
+                    useTransitionNav={false}
+                    onClick={() => setActive(item.href)}
+                    className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-150 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 whitespace-nowrap shrink-0'
                   >
-                    {item.label}
-                  </span>
+                    {/* Active indicator */}
+                    {active && (
+                      <div
+                        className={`absolute inset-0 bg-linear-to-r ${item.gradient} opacity-10 rounded-full`}
+                      />
+                    )}
 
-                  {/* Bottom active border */}
-                  {active && (
-                    <div
-                      className={`absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r ${item.gradient} rounded-full`}
-                    />
-                  )}
-                </FastLink>
-              );
-            })}
+                    {/* Icon */}
+                    <div className='relative'>
+                      <Icon
+                        className={`w-5 h-5 transition-all duration-300 ${
+                          active
+                            ? item.color
+                            : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'
+                        } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
+                      />
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={`text-sm font-medium transition-all duration-300 ${
+                        active
+                          ? `${item.color} font-semibold`
+                          : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+
+                    {/* Bottom active border */}
+                    {active && (
+                      <div
+                        className={`absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r ${item.gradient} rounded-full`}
+                      />
+                    )}
+                  </FastLink>
+                );
+              })}
             </div>
 
             {/* Right Side Actions - ✨ AI Button, Theme Toggle & User Menu */}
@@ -231,7 +220,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
           >
             {/* Header */}
             <div className='flex items-center justify-between px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50'>
-              <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>全部分类</h3>
+              <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
+                全部分类
+              </h3>
               <button
                 onClick={() => setShowMoreMenu(false)}
                 className='p-2 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors'
@@ -250,12 +241,12 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
                   <FastLink
                     key={item.label}
                     href={item.href}
-                    useTransitionNav
+                    useTransitionNav={false}
                     onClick={() => {
                       setActive(item.href);
                       setShowMoreMenu(false);
                     }}
-                    className='flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 active:scale-95 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
+                    className='flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-150 active:scale-95 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
                   >
                     <div
                       className={`flex items-center justify-center w-12 h-12 rounded-2xl ${
@@ -274,9 +265,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
                     </div>
                     <span
                       className={`text-xs font-medium ${
-                        active
-                          ? item.color
-                          : 'text-gray-700 dark:text-gray-300'
+                        active ? item.color : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {item.label}
@@ -307,9 +296,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
               <FastLink
                 key={item.label}
                 href={item.href}
-                useTransitionNav
+                useTransitionNav={false}
                 onClick={() => setActive(item.href)}
-                className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
+                className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-100 active:scale-95'
               >
                 <Icon
                   className={`w-6 h-6 mb-1 transition-colors duration-200 ${
@@ -333,7 +322,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
             className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
           >
             <MoreHorizontal className='w-6 h-6 mb-1 text-gray-600 dark:text-gray-400' />
-            <span className='text-[10px] font-medium text-gray-600 dark:text-gray-400'>更多</span>
+            <span className='text-[10px] font-medium text-gray-600 dark:text-gray-400'>
+              更多
+            </span>
           </button>
         </div>
       </nav>
