@@ -656,32 +656,38 @@ export const UserMenu: React.FC = () => {
 
   const handleAdminPanel = () => {
     setIsOpen(false);
-    router.refresh();
-    router.push('/admin');
+    // 使用 setTimeout 让菜单关闭动画先执行，避免阻塞
+    setTimeout(() => {
+      router.push('/admin');
+    }, 0);
   };
 
   const handlePlayStats = () => {
     setIsOpen(false);
-    router.refresh();
-    router.push('/play-stats');
+    setTimeout(() => {
+      router.push('/play-stats');
+    }, 0);
   };
 
   const handleTVBoxConfig = () => {
     setIsOpen(false);
-    router.refresh();
-    router.push('/tvbox');
+    setTimeout(() => {
+      router.push('/tvbox');
+    }, 0);
   };
 
   const handleWatchRoom = () => {
     setIsOpen(false);
-    router.refresh();
-    router.push('/watch-room');
+    setTimeout(() => {
+      router.push('/watch-room');
+    }, 0);
   };
 
   const handleReleaseCalendar = () => {
     setIsOpen(false);
-    router.refresh();
-    router.push('/release-calendar');
+    setTimeout(() => {
+      router.push('/release-calendar');
+    }, 0);
   };
 
   const handleWatchingUpdates = () => {
