@@ -597,44 +597,52 @@ export const UserMenu: React.FC = () => {
     }
   }, [isDoubanImageProxyDropdownOpen]);
 
-  const handleMenuClick = async () => {
+  const handleMenuClick = () => {
     const willOpen = !isOpen;
     setIsOpen(willOpen);
 
-    // 如果是打开菜单，立即检查更新（不受缓存限制）
+    // 如果是打开菜单，使用 setTimeout 让菜单动画先执行，然后在后台检查更新
     if (willOpen && authInfo?.username && storageType !== 'localstorage') {
-      console.log('打开菜单时强制检查更新...');
-      try {
-        // 暂时清除缓存时间，强制检查一次
-        const lastCheckTime = localStorage.getItem('moontv_last_update_check');
-        localStorage.removeItem('moontv_last_update_check');
+      console.log('打开菜单，将在后台检查更新...');
 
-        // 执行检查
-        await checkWatchingUpdates();
+      // 延迟执行更新检查，避免阻塞菜单打开动画
+      setTimeout(() => {
+        const checkUpdatesAsync = async () => {
+          try {
+            // 暂时清除缓存时间，强制检查一次
+            const lastCheckTime = localStorage.getItem('moontv_last_update_check');
+            localStorage.removeItem('moontv_last_update_check');
 
-        // 恢复缓存时间（如果之前有的话）
-        if (lastCheckTime) {
-          localStorage.setItem('moontv_last_update_check', lastCheckTime);
-        }
+            // 执行检查
+            await checkWatchingUpdates();
 
-        // 更新UI状态
-        const updates = getDetailedWatchingUpdates();
-        setWatchingUpdates(updates);
+            // 恢复缓存时间（如果之前有的话）
+            if (lastCheckTime) {
+              localStorage.setItem('moontv_last_update_check', lastCheckTime);
+            }
 
-        // 重新计算未读状态
-        if (updates && (updates.updatedCount || 0) > 0) {
-          const lastViewed = parseInt(localStorage.getItem('watchingUpdatesLastViewed') || '0');
-          const currentTime = Date.now();
-          const hasNewUpdates = lastViewed === 0 || (currentTime - lastViewed > 60000);
-          setHasUnreadUpdates(hasNewUpdates);
-        } else {
-          setHasUnreadUpdates(false);
-        }
+            // 更新UI状态
+            const updates = getDetailedWatchingUpdates();
+            setWatchingUpdates(updates);
 
-        console.log('菜单打开时的更新检查完成');
-      } catch (error) {
-        console.error('菜单打开时检查更新失败:', error);
-      }
+            // 重新计算未读状态
+            if (updates && (updates.updatedCount || 0) > 0) {
+              const lastViewed = parseInt(localStorage.getItem('watchingUpdatesLastViewed') || '0');
+              const currentTime = Date.now();
+              const hasNewUpdates = lastViewed === 0 || (currentTime - lastViewed > 60000);
+              setHasUnreadUpdates(hasNewUpdates);
+            } else {
+              setHasUnreadUpdates(false);
+            }
+
+            console.log('菜单更新检查完成');
+          } catch (error) {
+            console.error('菜单打开时检查更新失败:', error);
+          }
+        };
+
+        checkUpdatesAsync();
+      }, 100); // 延迟100ms，让菜单动画先开始
     }
   };
 
