@@ -8,7 +8,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ClientCache } from '@/lib/client-cache';
 import PageLayout from '@/components/PageLayout';
-import type { DoubanItem, SearchResult as GlobalSearchResult } from '@/lib/types';
+import type {
+  DoubanItem,
+  SearchResult as GlobalSearchResult,
+} from '@/lib/types';
 
 type Source = { key: string; name: string; api: string };
 type Category = { type_id: string | number; type_name: string };
@@ -30,7 +33,7 @@ export default function SourceBrowserPage() {
   const [activeSourceKey, setActiveSourceKey] = useState('');
   const activeSource = useMemo(
     () => sources.find((s) => s.key === activeSourceKey),
-    [sources, activeSourceKey]
+    [sources, activeSourceKey],
   );
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -66,13 +69,18 @@ export default function SourceBrowserPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const [previewData, setPreviewData] = useState<GlobalSearchResult | null>(null);
+  const [previewData, setPreviewData] = useState<GlobalSearchResult | null>(
+    null,
+  );
   const [previewItem, setPreviewItem] = useState<Item | null>(null);
   const [previewDouban, setPreviewDouban] = useState<DoubanItem | null>(null);
   const [previewDoubanLoading, setPreviewDoubanLoading] = useState(false);
   const [previewDoubanId, setPreviewDoubanId] = useState<number | null>(null);
   type BangumiTag = { name: string };
-  type BangumiInfoboxValue = string | { v: string } | Array<string | { v: string }>;
+  type BangumiInfoboxValue =
+    | string
+    | { v: string }
+    | Array<string | { v: string }>;
   type BangumiInfoboxEntry = { key: string; value: BangumiInfoboxValue };
   type BangumiSubject = {
     name?: string;
@@ -83,9 +91,12 @@ export default function SourceBrowserPage() {
     infobox?: BangumiInfoboxEntry[];
     summary?: string;
   };
-  const [previewBangumi, setPreviewBangumi] = useState<BangumiSubject | null>(null);
+  const [previewBangumi, setPreviewBangumi] = useState<BangumiSubject | null>(
+    null,
+  );
   const [previewBangumiLoading, setPreviewBangumiLoading] = useState(false);
-  const [previewSearchPick, setPreviewSearchPick] = useState<GlobalSearchResult | null>(null);
+  const [previewSearchPick, setPreviewSearchPick] =
+    useState<GlobalSearchResult | null>(null);
 
   const fetchSources = useCallback(async () => {
     setLoadingSources(true);
@@ -120,7 +131,7 @@ export default function SourceBrowserPage() {
     setCategoryError(null);
     try {
       const res = await fetch(
-        `/api/source-browser/categories?source=${encodeURIComponent(sourceKey)}`
+        `/api/source-browser/categories?source=${encodeURIComponent(sourceKey)}`,
       );
       if (!res.ok) throw new Error('获取分类失败');
       const data = await res.json();
@@ -145,7 +156,7 @@ export default function SourceBrowserPage() {
       sourceKey: string,
       typeId: string | number,
       p = 1,
-      append = false
+      append = false,
     ) => {
       if (!sourceKey || !typeId) return;
       if (append) setLoadingMore(true);
@@ -154,8 +165,8 @@ export default function SourceBrowserPage() {
       try {
         const res = await fetch(
           `/api/source-browser/list?source=${encodeURIComponent(
-            sourceKey
-          )}&type_id=${encodeURIComponent(String(typeId))}&page=${p}`
+            sourceKey,
+          )}&type_id=${encodeURIComponent(String(typeId))}&page=${p}`,
         );
         if (!res.ok) throw new Error('获取列表失败');
         const data = (await res.json()) as {
@@ -168,7 +179,7 @@ export default function SourceBrowserPage() {
         setPageCount(Number(data.meta?.pagecount || 1));
         // 更新可选年份
         const years = Array.from(
-          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean))
+          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean)),
         );
         years.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0));
         setAvailableYears(years);
@@ -183,7 +194,7 @@ export default function SourceBrowserPage() {
         else setLoadingItems(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -211,8 +222,8 @@ export default function SourceBrowserPage() {
       try {
         const res = await fetch(
           `/api/source-browser/search?source=${encodeURIComponent(
-            sourceKey
-          )}&q=${encodeURIComponent(q)}&page=${p}`
+            sourceKey,
+          )}&q=${encodeURIComponent(q)}&page=${p}`,
         );
         if (!res.ok) throw new Error('搜索失败');
         const data = (await res.json()) as {
@@ -224,7 +235,7 @@ export default function SourceBrowserPage() {
         setPage(Number(data.meta?.page || p));
         setPageCount(Number(data.meta?.pagecount || 1));
         const years = Array.from(
-          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean))
+          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean)),
         );
         years.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0));
         setAvailableYears(years);
@@ -239,7 +250,7 @@ export default function SourceBrowserPage() {
         else setLoadingItems(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -252,106 +263,50 @@ export default function SourceBrowserPage() {
     }
   }, [activeSourceKey, mode, query, fetchSearch]);
 
-  // IntersectionObserver 处理自动翻页（含简单节流）
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
-    const el = loadMoreRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          const now = Date.now();
-          const intervalOk = now - lastFetchAtRef.current > 700; // 700ms 节流
-          if (
-            !loadingItems &&
-            !loadingMore &&
-            hasMore &&
-            activeSourceKey &&
-            intervalOk
-          ) {
-            lastFetchAtRef.current = now;
-            const next = page + 1;
-            if (mode === 'search' && query.trim()) {
-              fetchSearch(activeSourceKey, query.trim(), next, true);
-            } else if (mode === 'category' && activeCategory) {
-              fetchItems(activeSourceKey, activeCategory, next, true);
-            }
-          }
-        }
-      },
-      { root: null, rootMargin: '200px', threshold: 0 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [
-    loadingItems,
-    loadingMore,
-    hasMore,
-    page,
-    mode,
-    activeSourceKey,
-    activeCategory,
-    query,
-    fetchItems,
-    fetchSearch,
-  ]);
-
-  // 首屏填充：若列表高度不足以产生滚动且仍有更多，则自动连续翻页尝试填满视口
-  useEffect(() => {
-    const tryAutoFill = async () => {
-      if (autoFillInProgressRef.current) return;
-      if (!loadMoreRef.current) return;
-      if (loadingItems || loadingMore || !hasMore) return;
-      const sentinel = loadMoreRef.current.getBoundingClientRect();
-      const inViewport = sentinel.top <= window.innerHeight + 100;
-      if (!inViewport) return;
-
-      autoFillInProgressRef.current = true;
-      try {
-        let iterations = 0;
-        while (iterations < 5) {
-          // 最多连续加载5页以防过载
-          if (!hasMore) break;
-          const now = Date.now();
-          if (now - lastFetchAtRef.current <= 400) break; // 避免过于频繁
-          lastFetchAtRef.current = now;
-          const next = page + iterations + 1;
-          if (mode === 'search' && query.trim()) {
-            await fetchSearch(activeSourceKey, query.trim(), next, true);
-          } else if (mode === 'category' && activeCategory) {
-            await fetchItems(activeSourceKey, activeCategory, next, true);
-          } else {
-            break;
-          }
-          iterations++;
-
-          // 重新检测是否还在视口之内（内容增长可能已挤出视口）
-          if (!loadMoreRef.current) break;
-          const rect = loadMoreRef.current.getBoundingClientRect();
-          if (rect.top > window.innerHeight + 100) break;
-        }
-      } finally {
-        autoFillInProgressRef.current = false;
+  // 分页控制函数
+  const goToPage = useCallback(
+    (p: number) => {
+      if (p < 1 || p > pageCount || loadingItems || loadingMore) return;
+      if (mode === 'search' && query.trim()) {
+        fetchSearch(activeSourceKey, query.trim(), p, false);
+      } else if (mode === 'category' && activeCategory) {
+        fetchItems(activeSourceKey, activeCategory, p, false);
       }
-    };
+    },
+    [
+      activeSourceKey,
+      activeCategory,
+      mode,
+      query,
+      pageCount,
+      loadingItems,
+      loadingMore,
+      fetchItems,
+      fetchSearch,
+    ],
+  );
 
-    // 异步执行以等待布局更新
-    const id = setTimeout(tryAutoFill, 50);
-    return () => clearTimeout(id);
-  }, [
-    items,
-    page,
-    pageCount,
-    hasMore,
-    loadingItems,
-    loadingMore,
-    mode,
-    activeSourceKey,
-    activeCategory,
-    query,
-    fetchItems,
-    fetchSearch,
-  ]);
+  const goToPrevPage = useCallback(() => {
+    goToPage(page - 1);
+  }, [page, goToPage]);
+
+  const goToNextPage = useCallback(() => {
+    goToPage(page + 1);
+  }, [page, goToPage]);
+
+  // 页码跳转状态
+  const [jumpPage, setJumpPage] = useState('');
+
+  const handleJumpSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const p = parseInt(jumpPage);
+      if (!isNaN(p)) {
+        goToPage(p);
+      }
+    },
+    [jumpPage, goToPage],
+  );
 
   const filteredAndSorted = useMemo(() => {
     let arr = [...items];
@@ -361,7 +316,7 @@ export default function SourceBrowserPage() {
       arr = arr.filter(
         (i) =>
           (i.title || '').toLowerCase().includes(kw) ||
-          (i.remarks || '').toLowerCase().includes(kw)
+          (i.remarks || '').toLowerCase().includes(kw),
       );
     }
     // 年份筛选（精确匹配）
@@ -375,11 +330,11 @@ export default function SourceBrowserPage() {
         return arr.sort((a, b) => b.title.localeCompare(a.title));
       case 'year-asc':
         return arr.sort(
-          (a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0)
+          (a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0),
         );
       case 'year-desc':
         return arr.sort(
-          (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0)
+          (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0),
         );
       default:
         return arr; // 保持上游顺序
@@ -400,13 +355,14 @@ export default function SourceBrowserPage() {
 
       // 2) 缓存未命中，回源请求 /api/douban/details
       const fallback = await fetch(
-        `/api/douban/details?id=${encodeURIComponent(String(doubanId))}`
+        `/api/douban/details?id=${encodeURIComponent(String(doubanId))}`,
       );
       if (fallback.ok) {
         const dbData = (await fallback.json()) as
           | { code: number; message: string; data?: DoubanItem }
           | DoubanItem;
-        const normalized = (dbData as { data?: DoubanItem }).data || (dbData as DoubanItem);
+        const normalized =
+          (dbData as { data?: DoubanItem }).data || (dbData as DoubanItem);
         setPreviewDouban(normalized);
         // 3) 回写缓存（4小时）
         try {
@@ -431,7 +387,9 @@ export default function SourceBrowserPage() {
     try {
       setPreviewBangumiLoading(true);
       setPreviewBangumi(null);
-      const res = await fetch(`/api/proxy/bangumi?path=v0/subjects/${bangumiId}`);
+      const res = await fetch(
+        `/api/proxy/bangumi?path=v0/subjects/${bangumiId}`,
+      );
       if (res.ok) {
         const data = (await res.json()) as {
           name?: string;
@@ -464,8 +422,8 @@ export default function SourceBrowserPage() {
     try {
       const res = await fetch(
         `/api/detail?source=${encodeURIComponent(
-          activeSourceKey
-        )}&id=${encodeURIComponent(item.id)}`
+          activeSourceKey,
+        )}&id=${encodeURIComponent(item.id)}`,
       );
       if (!res.ok) throw new Error('获取详情失败');
       const data = (await res.json()) as GlobalSearchResult;
@@ -477,15 +435,15 @@ export default function SourceBrowserPage() {
         const normalize = (s: string) =>
           (s || '').replace(/\s+/g, '').toLowerCase();
         const variants = Array.from(
-          new Set([item.title, (item.title || '').replace(/\s+/g, '')])
+          new Set([item.title, (item.title || '').replace(/\s+/g, '')]),
         ).filter(Boolean) as string[];
 
         for (const v of variants) {
           try {
             const res = await fetch(
               `/api/search/one?resourceId=${encodeURIComponent(
-                activeSourceKey
-              )}&q=${encodeURIComponent(v)}`
+                activeSourceKey,
+              )}&q=${encodeURIComponent(v)}`,
             );
             if (!res.ok) continue;
             const payload = (await res.json()) as {
@@ -501,10 +459,10 @@ export default function SourceBrowserPage() {
                   (r.year &&
                     String(r.year).toLowerCase() ===
                       String(item.year).toLowerCase())) &&
-                r.douban_id
+                r.douban_id,
             );
             const matchTitleOnly = list.find(
-              (r) => normalize(r.title) === tNorm && r.douban_id
+              (r) => normalize(r.title) === tNorm && r.douban_id,
             );
             const pick = matchStrict || matchTitleOnly || null;
             if (pick && pick.douban_id) {
@@ -598,7 +556,9 @@ export default function SourceBrowserPage() {
               </div>
             ) : sourceError ? (
               <div className='flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
-                <span className='text-sm text-red-600 dark:text-red-400'>{sourceError}</span>
+                <span className='text-sm text-red-600 dark:text-red-400'>
+                  {sourceError}
+                </span>
               </div>
             ) : sources.length === 0 ? (
               <div className='text-center py-8'>
@@ -693,7 +653,7 @@ export default function SourceBrowserPage() {
                         | 'title-asc'
                         | 'title-desc'
                         | 'year-asc'
-                        | 'year-desc'
+                        | 'year-desc',
                     )
                   }
                   className='sm:flex-1 sm:min-w-[120px] px-2 sm:px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs sm:text-sm'
@@ -747,7 +707,7 @@ export default function SourceBrowserPage() {
             </div>
             <div className='p-5 space-y-5'>
               {mode === 'category' && (
-                <div className='flex flex-wrap gap-2.5'>
+                <div className='flex flex-col gap-3'>
                   {loadingCategories ? (
                     <div className='flex items-center gap-2 text-sm text-gray-500'>
                       <div className='w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
@@ -765,25 +725,31 @@ export default function SourceBrowserPage() {
                       <p className='text-sm text-gray-500'>暂无分类</p>
                     </div>
                   ) : (
-                    categories.map((c, index) => (
-                      <button
-                        key={String(c.type_id)}
-                        onClick={() => setActiveCategory(c.type_id)}
-                        className={`group relative px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all duration-300 transform hover:scale-105 ${
-                          activeCategory === c.type_id
-                            ? 'bg-linear-to-r from-blue-500 to-indigo-500 text-white border-transparent shadow-lg shadow-blue-500/30'
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-linear-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:border-blue-300 dark:hover:border-blue-700'
-                        }`}
-                        style={{
-                          animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
-                        }}
-                      >
-                        {activeCategory === c.type_id && (
-                          <div className='absolute inset-0 rounded-xl bg-linear-to-r from-blue-400 to-indigo-400 blur-lg opacity-50 -z-10'></div>
-                        )}
-                        {c.type_name}
-                      </button>
-                    ))
+                    <div className='space-y-3'>
+                      {/* 胶囊式分类选择器 - 多行显示 */}
+                      <div className='flex flex-wrap gap-2'>
+                        {categories.map((c, index) => (
+                          <button
+                            key={String(c.type_id)}
+                            className={`relative z-10 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap active:scale-95
+                              ${
+                                activeCategory === c.type_id
+                                  ? 'bg-white dark:bg-gray-500 text-gray-900 dark:text-gray-100 shadow-sm'
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100'
+                              }
+                            `}
+                            onClick={() => setActiveCategory(c.type_id)}
+                            style={{
+                              animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
+                              flex: '0 0 calc(12.5% - 4px)', // 每行8个，减去gap
+                              minWidth: '80px', // 最小宽度，确保文字不换行
+                            }}
+                          >
+                            {c.type_name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -837,7 +803,9 @@ export default function SourceBrowserPage() {
                               <div className='w-full h-full flex items-center justify-center text-gray-400 text-xs sm:text-sm'>
                                 <div className='text-center'>
                                   <Tv className='w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-1 sm:mb-2 opacity-50' />
-                                  <div className='text-[10px] sm:text-sm'>无封面</div>
+                                  <div className='text-[10px] sm:text-sm'>
+                                    无封面
+                                  </div>
                                 </div>
                               </div>
                             )}
@@ -872,20 +840,50 @@ export default function SourceBrowserPage() {
                         </div>
                       ))}
                     </div>
-                    {/* Infinite loader sentinel */}
-                    <div
-                      ref={loadMoreRef}
-                      className='mt-4 flex items-center justify-center py-4'
-                    >
-                      {loadingMore ? (
-                        <div className='text-sm text-gray-500'>加载更多...</div>
-                      ) : hasMore ? (
-                        <div className='text-xs text-gray-400'>
-                          下拉加载更多
-                        </div>
-                      ) : (
-                        <div className='text-xs text-gray-400'>没有更多了</div>
-                      )}
+                    {/* 分页控件 */}
+                    <div className='mt-6 flex flex-col sm:flex-row items-center justify-between gap-4'>
+                      <div className='text-sm text-gray-600 dark:text-gray-400'>
+                        共 {pageCount} 页，当前第 {page} 页
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <button
+                          onClick={goToPrevPage}
+                          disabled={page === 1 || loadingItems || loadingMore}
+                          className='px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                        >
+                          上一页
+                        </button>
+                        <button
+                          onClick={goToNextPage}
+                          disabled={
+                            page === pageCount || loadingItems || loadingMore
+                          }
+                          className='px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                        >
+                          下一页
+                        </button>
+                        <form
+                          onSubmit={handleJumpSubmit}
+                          className='flex items-center gap-2'
+                        >
+                          <input
+                            type='number'
+                            min='1'
+                            max={pageCount}
+                            value={jumpPage}
+                            onChange={(e) => setJumpPage(e.target.value)}
+                            placeholder='页码'
+                            className='w-16 px-2 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm'
+                          />
+                          <button
+                            type='submit'
+                            disabled={loadingItems || loadingMore}
+                            className='px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            跳转
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   </>
                 )}
@@ -921,8 +919,18 @@ export default function SourceBrowserPage() {
                   onClick={() => setPreviewOpen(false)}
                   title='关闭'
                 >
-                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M6 18L18 6M6 6l12 12'
+                    />
                   </svg>
                 </button>
               </div>
@@ -935,8 +943,16 @@ export default function SourceBrowserPage() {
                   </div>
                 ) : previewError ? (
                   <div className='flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400'>
-                    <svg className='w-5 h-5 shrink-0' fill='currentColor' viewBox='0 0 20 20'>
-                      <path fillRule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z' clipRule='evenodd' />
+                    <svg
+                      className='w-5 h-5 shrink-0'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
+                      <path
+                        fillRule='evenodd'
+                        d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
+                        clipRule='evenodd'
+                      />
                     </svg>
                     {previewError}
                   </div>
@@ -1173,16 +1189,14 @@ export default function SourceBrowserPage() {
                             {Array.isArray(previewBangumi.tags) &&
                               previewBangumi.tags.length > 0 && (
                                 <div className='flex flex-wrap gap-2 text-xs'>
-                                  {previewBangumi.tags
-                                    .slice(0, 10)
-                                    .map((t) => (
-                                      <span
-                                        key={t.name}
-                                        className='px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700'
-                                      >
-                                        {t.name}
-                                      </span>
-                                    ))}
+                                  {previewBangumi.tags.slice(0, 10).map((t) => (
+                                    <span
+                                      key={t.name}
+                                      className='px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700'
+                                    >
+                                      {t.name}
+                                    </span>
+                                  ))}
                                 </div>
                               )}
                             {Array.isArray(previewBangumi.infobox) &&
@@ -1196,12 +1210,12 @@ export default function SourceBrowserPage() {
                                         {Array.isArray(info.value)
                                           ? info.value
                                               .map((v) =>
-                                                typeof v === 'string' ? v : v.v
+                                                typeof v === 'string' ? v : v.v,
                                               )
                                               .join('、')
                                           : typeof info.value === 'string'
-                                          ? info.value
-                                          : info.value.v}
+                                            ? info.value
+                                            : info.value.v}
                                       </div>
                                     ))}
                                 </div>
@@ -1242,7 +1256,11 @@ export default function SourceBrowserPage() {
                     className='group relative inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105'
                   >
                     <div className='absolute inset-0 rounded-xl bg-linear-to-r from-blue-400 to-indigo-400 blur-lg opacity-0 group-hover:opacity-50 transition-opacity -z-10'></div>
-                    <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
+                    <svg
+                      className='w-4 h-4'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
                       <path d='M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z' />
                     </svg>
                     立即播放
